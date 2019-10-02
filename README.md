@@ -1,6 +1,10 @@
 # selfdriving-fa19
 Self Driving Car Decal taught by Machine Learning @ Berkeley, Fall 2019 at UC Berkeley.
 
+Feedback Form: https://forms.gle/gPYdVEArEbiJAKU27 
+
+Assignment Checkoffs: https://forms.gle/KoBy26SXTv1ksrZC7
+
 Duckietown Gym Repo: https://github.com/duckietown/gym-duckietown
 
 Lecture 1: https://docs.google.com/presentation/d/1Hx1Kn4Ed5AZdq9dBWSR_UXArz7w_y7s1z7yvWat3rHU/edit?usp=sharing
