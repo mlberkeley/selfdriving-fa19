@@ -12,3 +12,5 @@ Lecture 1: https://docs.google.com/presentation/d/1Hx1Kn4Ed5AZdq9dBWSR_UXArz7w_y
 Lecture 2: https://docs.google.com/presentation/d/1Z0XcjYqtZLf_6vZ0YR3FVVCIv5ozF2PdKrszwLaJgbs/edit?usp=sharing
 
 Lecture 3: https://docs.google.com/presentation/d/1kNSFGS4YsGZVjj9YLRKOGihZpR6Uudbtq5S5TXuOvAU/edit?usp=sharing
+
+Lecture 4: https://docs.google.com/presentation/d/1tA6xdRlfri3UO0XEGnZE1lfhKvL6Dptw7FO8Uai7QfY/edit?usp=sharing
