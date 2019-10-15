@@ -1521,9 +1521,73 @@ class Simulator(gym.Env):
                             continue
                         bezier_draw(pt, n=20)
 
+        for idx, obj in enumerate(self.objects):
+            if (not (hasattr(obj, "is_duck") and img_array.shape[0] == 600)):
+                obj.render(self.draw_bbox)
+
+        found_duck = False
+        duck_boxes = []
+
+        gl.glReadPixels(
+                0,
+                0,
+                width,
+                height,
+                gl.GL_RGB,
+                gl.GL_UNSIGNED_BYTE,
+                img_array.ctypes.data_as(POINTER(gl.GLubyte))
+        )
+        prev = np.copy(img_array)
+
         # For each object
         for idx, obj in enumerate(self.objects):
-            obj.render(self.draw_bbox)
+            if (hasattr(obj, "is_duck") and img_array.shape[0] == 600):
+                obj.render(self.draw_bbox)
+                gl.glReadPixels(
+                        0,
+                        0,
+                        width,
+                        height,
+                        gl.GL_RGB,
+                        gl.GL_UNSIGNED_BYTE,
+                        img_array.ctypes.data_as(POINTER(gl.GLubyte))
+                )
+                
+                if (np.linalg.norm(prev - img_array) > 2500):
+
+                    if (obj.prev_found is not None):
+                        p_minr, p_minc, p_maxr, p_maxc = obj.prev_found
+
+                        error_bound = 50
+                        p_minr = max(0, p_minr - error_bound)
+                        p_minc = max(0, p_minc - error_bound)
+                        p_maxr = min(img_array.shape[0] - 1, p_maxr + error_bound)
+                        p_maxc = min(img_array.shape[1] - 1, p_maxc + error_bound)
+
+                        diff = prev[p_minr:p_maxr,p_minc:p_maxc,0] - img_array[p_minr:p_maxr,p_minc:p_maxc,0]
+
+                        change_rows, change_cols = np.nonzero(diff)
+                        n_minr = change_rows[0] + p_minr
+                        n_maxr = change_rows[-1] + p_minr
+                        n_minc = np.min(change_cols) + p_minc
+                        n_maxc = np.max(change_cols) + p_minc
+
+                    else:
+                        
+                        change_rows, change_cols = np.nonzero(prev[:,:,0] - img_array[:,:,0])
+                        n_minr = change_rows[0]
+                        n_maxr = change_rows[-1]
+                        n_minc = np.min(change_cols)
+                        n_maxc = np.max(change_cols)
+
+                    obj.prev_found = (n_minr, n_minc, n_maxr, n_maxc)
+
+                    duck_boxes.append((n_minr, n_minc, n_maxr, n_maxc))
+
+                    prev = np.copy(img_array)
+                else:
+                    obj.prev_found = None
+                
 
         # Draw the agent's own bounding box
         if self.draw_bbox:
@@ -1572,6 +1636,14 @@ class Simulator(gym.Env):
 
         # Unbind the frame buffer
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
+
+        for n_minr, n_minc, n_maxr, n_maxc in duck_boxes:
+            for c in range(n_minc, n_maxc):
+                img_array[n_minr][c] = [255, 0, 0]
+                img_array[n_maxr][c] = [255, 0, 0]
+            for r in range(n_minr, n_maxr):
+                img_array[r][n_minc] = [255, 0, 0]
+                img_array[r][n_maxc] = [255, 0, 0]
 
         # Flip the image because OpenGL maps (0,0) to the lower-left corner
         # Note: this is necessary for gym.wrappers.Monitor to record videos

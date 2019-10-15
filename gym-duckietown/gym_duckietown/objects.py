@@ -21,6 +21,10 @@ class WorldObj:
 
         self.process_obj_dict(obj, safety_radius_mult)
 
+        if (self.kind == "duckie"):
+            self.is_duck = True
+            self.prev_found = None
+
         self.domain_rand = domain_rand
         self.angle = self.y_rot * (math.pi / 180)
 
@@ -260,6 +264,9 @@ class DuckiebotObj(WorldObj):
 class DuckieObj(WorldObj):
     def __init__(self, obj, domain_rand, safety_radius_mult, walk_distance):
         WorldObj.__init__(self, obj, domain_rand, safety_radius_mult)
+
+        #self.is_duck = True
+        #self.prev_found = None
 
         self.walk_distance = walk_distance + 0.25
 
