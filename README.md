@@ -14,3 +14,5 @@ Lecture 2: https://docs.google.com/presentation/d/1Z0XcjYqtZLf_6vZ0YR3FVVCIv5ozF
 Lecture 3: https://docs.google.com/presentation/d/1kNSFGS4YsGZVjj9YLRKOGihZpR6Uudbtq5S5TXuOvAU/edit?usp=sharing
 
 Lecture 4: https://docs.google.com/presentation/d/1tA6xdRlfri3UO0XEGnZE1lfhKvL6Dptw7FO8Uai7QfY/edit?usp=sharing
+
+Lecture 5: https://docs.google.com/presentation/d/1YlYfN3ffb0BqdMh3bcu4cy6NkHlnRJ0PkboegyQQ4l4/edit?usp=sharing
