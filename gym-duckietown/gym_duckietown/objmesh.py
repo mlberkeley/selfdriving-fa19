@@ -2,6 +2,14 @@
 from .graphics import *
 from .utils import *
 from . import logger
+import os
+
+
+def relabel_mtl(cur_mtl, color):
+    # TODO: override the default Ka, Kd, Ks, Ke to change the color
+    #  -read http://paulbourke.net/dataformats/mtl/
+    #  -Brandon
+    cur_mtl["Kd"] = color
 
 
 class ObjMesh(object):
@@ -13,7 +21,7 @@ class ObjMesh(object):
     cache = {}
 
     @classmethod
-    def get(self, mesh_name):
+    def get(self, mesh_name, do_color_relabel=False):
         """
         Load a mesh or used a cached version
         """
@@ -24,12 +32,12 @@ class ObjMesh(object):
         if file_path in self.cache:
             return self.cache[file_path]
 
-        mesh = ObjMesh(file_path)
+        mesh = ObjMesh(file_path, do_color_relabel=do_color_relabel)
         self.cache[file_path] = mesh
 
         return mesh
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, do_color_relabel=True):
         """
         Load an OBJ model file
 
@@ -37,6 +45,23 @@ class ObjMesh(object):
         - only one object/group
         - only triangle faces
         """
+
+        # TODO: define color default for every object
+        self.do_color_relabel = do_color_relabel
+        basename = os.path.basename(file_path)
+        self.matte_color = np.array([1, 1, 1])
+        if "tree" in basename:
+            self.matte_color = np.array([0, 1, 0])
+        elif "sign" in basename:
+            self.matte_color = np.array([1, 0, 0])
+        elif "duckie" in basename:
+            self.matte_color = np.array([1, 1, 0])
+        elif "bus" in basename:
+            self.matte_color = np.array([0, 0, 1])
+        elif "house" in basename:
+            self.matte_color = np.array([1, 0, 1])
+        elif "barrier" in basename:
+            self.matte_color = np.array([0, 1, 1])
 
         # Comments
         # mtllib file_name
@@ -226,53 +251,64 @@ class ObjMesh(object):
         if os.path.exists(tex_path):
             default_mtl['map_Kd'] = tex_path
 
+        # TODO: override the default Ka, Kd, Ks, Ke to change the color
+        #  -read http://paulbourke.net/dataformats/mtl/
+        #  -Brandon
+        if self.do_color_relabel:
+            relabel_mtl(default_mtl, self.matte_color)
+
         materials = {
             '': default_mtl
         }
 
         mtl_path = model_file.split('.')[0] + '.mtl'
 
-        if not os.path.exists(mtl_path):
-            return materials
+        if os.path.exists(mtl_path):
 
-        logger.debug('loading materials from "%s"' % mtl_path)
+            logger.debug('loading materials from "%s"' % mtl_path)
 
-        mtl_file = open(mtl_path, 'r')
+            mtl_file = open(mtl_path, 'r')
 
-        cur_mtl = None
+            cur_mtl = None
 
-        # For each line of the input file
-        for line in mtl_file:
-            line = line.rstrip(' \r\n')
+            # For each line of the input file
+            for line in mtl_file:
+                line = line.rstrip(' \r\n')
 
-            # Skip comments
-            if line.startswith('#') or line == '':
-                continue
+                # Skip comments
+                if line.startswith('#') or line == '':
+                    continue
 
-            tokens = line.split(' ')
-            tokens = map(lambda t: t.strip(' '), tokens)
-            tokens = list(filter(lambda t: t != '', tokens))
+                tokens = line.split(' ')
+                tokens = map(lambda t: t.strip(' '), tokens)
+                tokens = list(filter(lambda t: t != '', tokens))
 
-            prefix = tokens[0]
-            tokens = tokens[1:]
+                prefix = tokens[0]
+                tokens = tokens[1:]
 
-            if prefix == 'newmtl':
-                cur_mtl = {}
-                materials[tokens[0]] = cur_mtl
+                if prefix == 'newmtl':
+                    cur_mtl = {}
+                    materials[tokens[0]] = cur_mtl
 
-            # Diffuse color
-            if prefix == 'Kd':
-                vals = list(map(lambda v: float(v), tokens))
-                vals = np.array(vals)
-                cur_mtl['Kd'] = vals
+                # Diffuse color
+                if prefix == 'Kd':
+                    vals = list(map(lambda v: float(v), tokens))
+                    vals = np.array(vals)
+                    cur_mtl['Kd'] = vals
 
-            # Texture file name
-            if prefix == 'map_Kd':
-                tex_file = tokens[-1]
-                tex_file = os.path.join(model_dir, tex_file)
-                cur_mtl['map_Kd'] = tex_file
+                # Texture file name
+                if prefix == 'map_Kd':
+                    tex_file = tokens[-1]
+                    tex_file = os.path.join(model_dir, tex_file)
+                    cur_mtl['map_Kd'] = tex_file
 
-        mtl_file.close()
+                # TODO: override the default Ka, Kd, Ks, Ke to change the color
+                #  -read http://paulbourke.net/dataformats/mtl/
+                #  -Brandon
+                if self.do_color_relabel:
+                    relabel_mtl(cur_mtl, self.matte_color)
+
+            mtl_file.close()
 
         return materials
 
@@ -281,7 +317,9 @@ class ObjMesh(object):
         for idx, vlist in enumerate(self.vlists):
             texture = self.textures[idx]
 
-            if texture:
+            if texture and not self.do_color_relabel:
+                # TODO: setting this to false turns off textures on all objects
+                #  -Brandon
                 gl.glEnable(gl.GL_TEXTURE_2D)
                 gl.glBindTexture(texture.target, texture.id)
             else:

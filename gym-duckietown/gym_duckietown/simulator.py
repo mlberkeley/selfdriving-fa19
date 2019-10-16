@@ -158,6 +158,7 @@ class Simulator(gym.Env):
             seed=None,
             distortion=False,
             randomize_maps_on_reset=False,
+            do_color_relabeling=False,
     ):
         """
 
@@ -178,6 +179,8 @@ class Simulator(gym.Env):
         :param distortion: If true, distorts the image with fish-eye approximation
         :param randomize_maps_on_reset: If true, randomizes the map on reset (Slows down training)
         """
+        self.do_color_relabeling = do_color_relabeling
+
         # first initialize the RNG
         self.seed_value = seed
         self.seed(seed=self.seed_value)
@@ -277,8 +280,6 @@ class Simulator(gym.Env):
         # Array to render the image into (for human rendering)
         self.img_array_human = np.zeros(shape=(WINDOW_HEIGHT, WINDOW_WIDTH, 3), dtype=np.uint8)
 
-        
-
         # allowed angle in lane for starting position
         self.accept_start_angle_deg = accept_start_angle_deg
 
@@ -329,7 +330,10 @@ class Simulator(gym.Env):
             0.0, 1.0,
             1.0, 1.0
         ]
-        self.road_vlist = pyglet.graphics.vertex_list(4, ('v3f', verts), ('t2f', texCoords))
+        self.road_vlist = pyglet.graphics.vertex_list(
+            4,
+            ('v3f', verts),
+            ('t2f', texCoords))
 
         # Create the vertex list for the ground quad
         verts = [
@@ -338,7 +342,10 @@ class Simulator(gym.Env):
             1, -0.8, -1,
             1, -0.8, 1
         ]
-        self.ground_vlist = pyglet.graphics.vertex_list(4, ('v3f', verts))
+
+        self.ground_vlist = pyglet.graphics.vertex_list(
+            4,
+            ('v3f', verts))
 
     def reset(self):
         """
@@ -430,7 +437,10 @@ class Simulator(gym.Env):
         for tile in self.grid:
             rng = self.np_random if self.domain_rand else None
             # Randomize the tile texture
-            tile['texture'] = Texture.get(tile['kind'], rng=rng)
+            tile_type = tile['kind']
+            if self.do_color_relabeling:
+                tile_type = "flat"
+            tile['texture'] = Texture.get(tile_type, rng=rng)
 
             # Random tile color multiplier
             tile['color'] = self._perturb([1, 1, 1], 0.2)
@@ -464,8 +474,6 @@ class Simulator(gym.Env):
                 tile = self.drivable_tiles[tile_idx]
 
         # Keep trying to find a valid spawn position on this tile
-
-
         for _ in range(MAX_SPAWN_ATTEMPTS):
             i, j = tile['coords']
 
@@ -599,7 +607,7 @@ class Simulator(gym.Env):
                     tile['curves'] = self._get_curve(i, j)
                     self.drivable_tiles.append(tile)
 
-        self.mesh = ObjMesh.get('duckiebot')
+        self.mesh = ObjMesh.get('duckiebot', do_color_relabel=self.do_color_relabeling)
         self._load_objects(map_data)
 
         # Get the starting tile from the map, if specified
@@ -643,7 +651,7 @@ class Simulator(gym.Env):
             pos = self.road_tile_size * np.array((x, y, z))
 
             # Load the mesh
-            mesh = ObjMesh.get(kind)
+            mesh = ObjMesh.get(kind, do_color_relabel=self.do_color_relabeling)
 
             if 'height' in desc:
                 scale = desc['height'] / mesh.max_coords[1]
@@ -1461,15 +1469,17 @@ class Simulator(gym.Env):
             )
 
         # Draw the ground quad
-        gl.glDisable(gl.GL_TEXTURE_2D)
-        gl.glColor3f(*self.ground_color)
-        gl.glPushMatrix()
-        gl.glScalef(50, 1, 50)
-        self.ground_vlist.draw(gl.GL_QUADS)
-        gl.glPopMatrix()
+        if not self.do_color_relabeling:
+            gl.glDisable(gl.GL_TEXTURE_2D)
+            gl.glColor3f(*self.ground_color)
+            gl.glPushMatrix()
+            gl.glScalef(50, 1, 50)
+            self.ground_vlist.draw(gl.GL_QUADS)
+            gl.glPopMatrix()
 
         # Draw the ground/noise triangles
-        self.tri_vlist.draw(gl.GL_TRIANGLES)
+        if not self.do_color_relabeling:
+            self.tri_vlist.draw(gl.GL_TRIANGLES)
 
         # Draw the road quads
         gl.glEnable(gl.GL_TEXTURE_2D)
@@ -1485,10 +1495,31 @@ class Simulator(gym.Env):
                 if tile is None:
                     continue
 
-                # kind = tile['kind']
+                kind = tile['kind']
                 angle = tile['angle']
                 color = tile['color']
                 texture = tile['texture']
+
+                # TODO: change the roads and ground to not render textures
+                #  -Brandon
+                if self.do_color_relabeling:
+                    color = [1, 1, 1]
+                    if kind == "asphalt":
+                        color = [1, 0.5, 0]
+                    elif kind == "3way_left":
+                        color = [0, 0, 0]
+                    elif kind == "3way_right":
+                        color = [0, 0, 0]
+                    elif kind == "straight":
+                        color = [0, 0, 0]
+                    elif kind == "curve_right":
+                        color = [0, 0, 0]
+                    elif kind == "curve_left":
+                        color = [0, 0, 0]
+                    elif kind == "grass":
+                        color = [0, 1, 0]
+                    elif kind == "floor":
+                        color = [1, 0.5, 0]
 
                 gl.glColor3f(*color)
 
