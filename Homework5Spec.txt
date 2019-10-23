@@ -1,0 +1,7 @@
+Preliminary: pull from the repo. We have updated the simulator.py file and the objmesh.py file to now allow images to be displayed in segmented form. Here is a little explanation of how this works. When running duckie_controller_demo.py, we create objects called environments which represent the state of the map, position of objects, and some rendering files. This is controlled by simulator.py. Thus in simulator.py, we define a new boolean called do_color_relabeling, which modifies the textures and colors when turned on.
+
+Part1: play around with the two values for do_color_relabeling and notice what changes when you run duckie_controller_demo.py.
+
+Part2: create a way to save the images which are displayed when running duckie_controller_demo.py. Hint, this can easily be done from within the duckie_controller_demo.py file.
+
+Part3: hack or elegantly program a way to save paired training data in duckietown from the base code given in duckie_controller_demo.py. Keep in mind we may pass do_color_relabeling = True/False in the DuckietownEnv constructor to either relabel colors into semantic segmentations or not. You do not need to modify files other than duckie_controller_demo to get this working, but can if you want.
