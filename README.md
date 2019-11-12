@@ -22,3 +22,5 @@ Lecture 6: https://docs.google.com/presentation/d/1Uh4OssGO8nXL0U0eDvReNMTYYJdmx
 Lecture 7: https://docs.google.com/presentation/d/1ylQ87iPhgpo34UOLgPgd3oFLnnGycMWjk1UMNn97Tzo/edit?usp=sharing
 
 Lecture 8: https://docs.google.com/presentation/d/1xKg_HNXglLogngRbhDPe_o4MA6E5zAfiGlrQ4rdofbo/edit?usp=sharing
+
+Lecture 9: https://docs.google.com/presentation/d/1bqOoudLvN5Ps_BP5ia1Wrc252Ww7ID1aAm5LfTDSi18/edit?usp=sharing
