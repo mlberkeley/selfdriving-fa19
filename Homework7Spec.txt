@@ -1,0 +1,8 @@
+Files you will edit:
+- duckie_astar_hw7/render_costmap.py
+- duckie_astar_hw7/render_astar.py
+
+(1) Render a costmap from a segmentation of duckietown using a provided script duckie_astar_hw7/render_costmap.py
+(2) Implement A* in using duckie_astar_hw7/render_astar.py the costmap with randomly sampled goals.
+(3) Visualize these plans using the script duckie_astar_hw7/render_astar.py
+(4) Record a video of the duckietown car following paths in a new environment using PID.

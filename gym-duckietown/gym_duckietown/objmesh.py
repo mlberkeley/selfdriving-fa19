@@ -54,6 +54,8 @@ class ObjMesh(object):
             self.matte_color = np.array([0, 1, 0])
         elif "sign" in basename:
             self.matte_color = np.array([1, 0, 0])
+        elif "duckiebot" in basename:
+            self.matte_color = np.array([0, 0, 0])
         elif "duckie" in basename:
             self.matte_color = np.array([1, 1, 0])
         elif "bus" in basename:
